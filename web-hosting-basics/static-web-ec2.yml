@@ -5,7 +5,7 @@ Resources:
   WebServerInstance:
     Type: AWS::EC2::Instance
     Properties:
-      ImageId: ami-06cd52961ce9f0d85 # ap-northeast-1
+      ImageId: ami-0a1c2ec61571737db # ap-northeast-1
       InstanceType: t2.micro # free tier
       SecurityGroups: 
         - !Ref WebServerSecurityGroup
