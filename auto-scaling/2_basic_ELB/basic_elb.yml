@@ -1,0 +1,96 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Put a Elastic Load Balancer infront of that VM and load balance between two Availability Zones (one EC2 in each AZ).
+
+Parameters:
+  CustomAMI: 
+    Type: String
+    Description: Enter your custom "fortune-ami" (ami-0daf45872e8ad8165)
+  Subnet1: 
+    Type: String
+    Description: Enter subnet of AZ1 (ap-northeast-1a)
+  Subnet2: 
+    Type: String
+    Description: Enter subnet of AZ2 (ap-northeast-1c)
+  VpcIdParam:
+    Type: String
+    Description: Enter VPC ID to use in target group
+
+Resources:
+  WebServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable access via ALB + SSH only
+      SecurityGroupIngress:
+        - SourceSecurityGroupId: !GetAtt LoadBalancerSecurityGroup.GroupId
+          IpProtocol: -1 # specify all protocols
+
+  LoadBalancerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable HTTP access via port 80
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: 0.0.0.0/0
+
+  WebServerInstance1:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref CustomAMI
+      InstanceType: t2.micro # free tier
+      AvailabilityZone: ap-northeast-1a
+      SecurityGroups: 
+        - !Ref WebServerSecurityGroup
+      KeyName: EC2keypair # change to match your own settings
+      UserData: !Base64 |
+        #!/bin/bash -xe
+        service httpd start
+
+  WebServerInstance2:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref CustomAMI
+      InstanceType: t2.micro # free tier
+      AvailabilityZone: ap-northeast-1c
+      SecurityGroups: 
+        - !Ref WebServerSecurityGroup
+      KeyName: EC2keypair # change to match your own settings
+      UserData: !Base64 |
+        #!/bin/bash -xe
+        service httpd start
+
+  MyALB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties: 
+      SecurityGroups: 
+        - !GetAtt LoadBalancerSecurityGroup.GroupId
+      Subnets:
+        - !Ref Subnet1
+        - !Ref Subnet2
+
+  HttpsListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+      - TargetGroupArn: !Ref MyTargetGroup
+        Type: forward
+      LoadBalancerArn: !Ref MyALB
+      Port: 80
+      Protocol: HTTP
+
+  MyTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Port: 80
+      TargetType: instance
+      Protocol: HTTP
+      Targets:
+        - Id: !Ref WebServerInstance1
+        - Id: !Ref WebServerInstance2
+      VpcId: !Ref VpcIdParam
+
+Outputs:
+  LoadBalancerDNS:
+    Description: DNS of ALB
+    Value: !GetAtt MyALB.DNSName
