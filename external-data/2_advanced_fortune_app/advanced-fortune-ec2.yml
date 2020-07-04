@@ -1,0 +1,63 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: "Refactor your static page into your Fortune-of-the-Day website (Node, PHP, Python, whatever) which reads/updates a list of fortunes in the AWS DynamoDB table. (Hint: EC2 Instance Role)"
+
+Resources:
+  WebServerInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-0a1c2ec61571737db # ap-northeast-1
+      InstanceType: t2.micro # free tier
+      SecurityGroups: 
+        - !Ref WebServerSecurityGroup
+      KeyName: EC2keypair # change to match your own settings
+      IamInstanceProfile: !Ref DynamoDBAccessInstanceProfile
+      UserData: !Base64 |
+        #!/bin/bash -xe
+        sudo yum -y install java-11-amazon-corretto-headless
+
+  WebServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable access via port 8080
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 8080
+        ToPort: 8080
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: 22
+        ToPort: 22
+        CidrIp: 0.0.0.0/0
+
+  DynamoDBAccessRole:
+    Type: AWS::IAM::Role
+    Properties: 
+      AssumeRolePolicyDocument: 
+        Version: "2012-10-17"
+        Statement: 
+          - Effect: "Allow"
+            Principal: 
+              Service: 
+                - "ec2.amazonaws.com"
+            Action: 
+              - "sts:AssumeRole"
+      Path: "/"
+  DynamoDBAccessPolicies: 
+    Type: "AWS::IAM::Policy"
+    Properties: 
+      PolicyName: "DynamoDBAccessPolicy"
+      PolicyDocument: 
+        Version: "2012-10-17"
+        Statement: 
+          - 
+            Effect: "Allow"
+            Action: "dynamodb:*"
+            Resource: "*"
+      Roles: 
+        - !Ref DynamoDBAccessRole
+  DynamoDBAccessInstanceProfile: 
+    Type: "AWS::IAM::InstanceProfile"
+    Properties: 
+      Path: "/"
+      Roles: 
+        - !Ref DynamoDBAccessRole
