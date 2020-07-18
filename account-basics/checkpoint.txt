@@ -1,3 +1,0 @@
-1. Open CLI
-2. aws iam get-account-summary
--> {...}: OK
