@@ -1,0 +1,1 @@
+aws cloudformation validate-template --template-body file://C:/Users/NamNVH/Desktop/AWS/aws-challenge/auto-scaling/1_basic_autoscaling/basic_autoscaling.yml

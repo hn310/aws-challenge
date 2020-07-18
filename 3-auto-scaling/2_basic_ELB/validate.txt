@@ -1,0 +1,1 @@
+aws cloudformation validate-template --template-body file://C:/Users/NamNVH/Desktop/AWS/aws-challenge/auto-scaling/2_basic_elb/basic_elb.yml

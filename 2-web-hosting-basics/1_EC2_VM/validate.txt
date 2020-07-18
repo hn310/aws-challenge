@@ -1,0 +1,1 @@
+aws cloudformation validate-template --template-body file://C:/Users/NamNVH/Desktop/AWS/aws-challenge/web-hosting-basics/1_EC2_VM/static-web-ec2.yml
