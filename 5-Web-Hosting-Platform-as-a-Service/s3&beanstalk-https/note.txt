@@ -1,0 +1,16 @@
+1. Configure S3 to use HTTPS
+https://www.freecodecamp.org/news/simple-site-hosting-with-amazon-s3-and-https-5e78017f482a/
+
+2. To enable ALB forward request to port 8080 on EC2:
+On Elastic Beanstalk, choose ALB, choose process rule with port 8080
+(which mean ALB will forward request to port 8080 on EC2)
+
+**IMPORTANT**: 
+Use "/health-check" page for health check. Don't use main page because it will take long time to load (>30sec)
+
+3. Note
+3.1. Should create a health-check.html for health-check. If use directly application for health-check -> could intefere with delete/create table -> sometimes error
+3.1. ACM is regional service.
+3.2. Enable HTTPS on ALB
+Add listerner rule: Redirect port 80 -> 443
+On target groups: enable health check on port 8080 (since app runs on 8080)

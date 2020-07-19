@@ -1,7 +1,0 @@
-https://www.freecodecamp.org/news/simple-site-hosting-with-amazon-s3-and-https-5e78017f482a/
-
-ACM is regional service.
-
-Enable HTTPS on ALB:
-Add listerner rule: Redirect port 80 -> 443
-On target groups: enable health check on port 8080 (since app runs on 8080)
