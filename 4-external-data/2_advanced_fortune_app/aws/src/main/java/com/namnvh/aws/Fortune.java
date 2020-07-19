@@ -145,5 +145,10 @@ public class Fortune {
     public void setNewFortune(String newFortune) {
         this.newFortune = newFortune;
     }
+    
+    @GetMapping("health-check")
+    public String initHealthCheck() {
+        return "health-check";
+    }
 
 }
